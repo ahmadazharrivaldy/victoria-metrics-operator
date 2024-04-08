@@ -1,0 +1,39 @@
+# I use this cheat with reference https://github.com/grafana/loki/issues/8180
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-storage
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pvc-vmsingle-tsdb
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/data/victoria-metrics/"
+  storageClassName: local-storage
+  claimRef:
+    namespace: monitoring-system
+    name: vmsingle-tsdb
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vmsingle-tsdb
+  namespace: monitoring-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  resources:
+    requests:
+      storage: 100Gi

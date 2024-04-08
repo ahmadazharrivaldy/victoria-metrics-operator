@@ -1,0 +1,26 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMStaticScrape
+metadata:
+  labels:
+    app.kubernetes.io/component: exporter
+    app.kubernetes.io/name: node-exporter
+    app.kubernetes.io/part-of: victoria-metrics-operator
+  name: node-exporter
+  namespace: monitoring-system
+spec:
+  jobName: node-exporter
+  targetEndpoints:
+    - interval: 30s
+      relabelConfigs:
+        - action: replace
+          regex: ([^:]+)(:[0-9]+)?
+          replacement: ${1}
+          sourceLabels:
+            - __address__
+          targetLabel: instance
+      scheme: http
+      targets:
+        - 10.0.10.10:9100
+        - 10.0.10.11:9100
+        - 10.0.10.12:9100
+        - 10.0.10.13:9100

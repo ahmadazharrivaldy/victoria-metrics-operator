@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/name: vmalert-node-access
+    app.kubernetes.io/part-of: victoria-metrics-operator
+  name: vmalert-node-access
+  namespace: monitoring-system
+spec:
+  ports:
+  - name: http
+    nodePort: 30880
+    port: 8080
+    targetPort: 8080
+  selector:
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/name: vmalert
+    app.kubernetes.io/part-of: victoria-metrics-operator
+  type: NodePort

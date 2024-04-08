@@ -1,0 +1,18 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/name: victoria-metrics-operator
+    app.kubernetes.io/part-of: victoria-metrics-operator
+    app.kubernetes.io/version: 0.42.4
+  name: leader-election-rolebinding
+  namespace: monitoring-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: leader-election-role
+subjects:
+  - kind: ServiceAccount
+    name: victoria-metrics-operator
+    namespace: monitoring-system

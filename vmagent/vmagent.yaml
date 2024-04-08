@@ -1,0 +1,54 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMAgent
+metadata:
+  labels:
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/name: vmagent
+    app.kubernetes.io/part-of: victoria-metrics-operator
+    app.kubernetes.io/version: 1.100.0
+  name: scraping
+  namespace: monitoring-system
+spec:
+  extraArgs:
+    promscrape.maxScrapeSize: "50MB"
+  dnsConfig:
+    options:
+      - name: ndots
+        value: "0"
+  externalLabels:
+    cluster: rz-k8s-cluster
+  image:
+    repository: victoriametrics/vmagent
+    tag: v1.100.0
+    pullPolicy: IfNotPresent
+  nodeSelector:
+    node-role.kubernetes.io/monitoring: ""
+  podMetadata:
+    annotations:
+      kubectl.kubernetes.io/default-container: vmagent
+    labels:
+      app.kubernetes.io/component: monitoring
+      app.kubernetes.io/name: vmagent
+      app.kubernetes.io/part-of: victoria-metrics-operator
+      app.kubernetes.io/version: 1.100.0
+  remoteWrite:
+    - url: "http://vmsingle-tsdb.monitoring-system.svc.cluster.local:8429/api/v1/write"
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "350Mi"
+    limits:
+      cpu: "500m"
+      memory: "850Mi"
+  scrapeInterval: 30s
+  selectAllByDefault: true
+  tolerations:
+    - operator: Exists
+  volumeMounts:
+    - mountPath: /etc/etcd-certs/
+      name: etcd-certs
+  volumes:
+    - name: etcd-certs
+      secret:
+        secretName: etcd-certs

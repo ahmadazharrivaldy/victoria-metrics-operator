@@ -1,0 +1,51 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMSingle
+metadata:
+  labels:
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/name: vmsingle
+    app.kubernetes.io/part-of: victoria-metrics-operator
+    app.kubernetes.io/version: 1.100.0
+  name: tsdb
+  namespace: monitoring-system
+spec:
+  extraArgs:
+    search.maxSeries: "100000000"
+    search.maxQueryLen: "1MB"
+  image:
+    repository: victoriametrics/victoria-metrics
+    tag: v1.100.0
+    pullPolicy: IfNotPresent
+  nodeSelector:
+    node-role.kubernetes.io/monitoring: ""
+  podMetadata:
+    labels:
+      app.kubernetes.io/component: monitoring
+      app.kubernetes.io/name: vmsingle
+      app.kubernetes.io/part-of: victoria-metrics-operator
+      app.kubernetes.io/version: 1.100.0
+  startupProbe:
+    failureThreshold: 30
+    httpGet:
+      path: /health
+      port: 8429
+      scheme: HTTP
+    periodSeconds: 10
+  removePvcAfterDelete: false
+  replicaCount: 1
+  retentionPeriod: "1"
+  resources:
+    requests:
+      cpu: "1000m"
+      memory: "1000Mi"
+    limits:
+      cpu: "2000m"
+      memory: "3000Mi"
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 100Gi
+  tolerations:
+    - operator: Exists

@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: exporter
+    app.kubernetes.io/name: etcd
+    app.kubernetes.io/part-of: victoria-metrics-operator
+    app.kubernetes.io/version: 3.5.9
+  name: etcd-metrics
+  namespace: kube-system
+spec:
+  clusterIP: None
+  ports:
+    - name: https-metrics
+      port: 2379
+      protocol: TCP
+      targetPort: 2379
+  selector:
+    component: etcd
+    tier: control-plane
+  type: ClusterIP
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  labels:
+    app.kubernetes.io/component: exporter
+    app.kubernetes.io/name: etcd
+    app.kubernetes.io/part-of: victoria-metrics-operator
+    app.kubernetes.io/version: 3.5.9
+  name: etcd
+  namespace: monitoring-system
+spec:
+  endpoints:
+    - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      interval: 30s
+      port: https-metrics
+      relabelConfigs:
+        - action: replace
+          sourceLabels:
+            - __meta_kubernetes_pod_node_name
+          targetLabel: node
+      scheme: https
+      tlsConfig:
+        caFile: /etc/etcd-certs/ca.crt
+        certFile: /etc/etcd-certs/client.crt
+        keyFile: /etc/etcd-certs/client.key
+  jobLabel: app.kubernetes.io/name
+  namespaceSelector:
+    matchNames:
+      - kube-system
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: exporter
+      app.kubernetes.io/name: etcd
+      app.kubernetes.io/part-of: victoria-metrics-operator

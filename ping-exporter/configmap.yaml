@@ -1,0 +1,35 @@
+apiVersion: v1
+data:
+  config.yml: |
+    dns:
+      nameserver: 10.96.0.10
+      refresh: 2m15s
+    options:
+      disableIPv6: true
+    ping:
+      history-size: 42
+      interval: 2s
+      payload-size: 120
+      timeout: 3s
+    targets:
+    - YOUR_IP_ADDRESS:
+        dst_name: YOUR_DESTINATION_NAME
+        group: GROUP_NAME
+        ip_type: YOUR_IP_TYPE
+    - YOUR_IP_ADDRESS:
+        dst_name: YOUR_DESTINATION_NAME
+        group: GROUP_NAME
+        ip_type: YOUR_IP_TYPE
+    - YOUR_IP_ADDRESS:
+        dst_name: YOUR_DESTINATION_NAME
+        group: GROUP_NAME
+        ip_type: YOUR_IP_TYPE
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: exporter
+    app.kubernetes.io/name: ping-exporter
+    app.kubernetes.io/part-of: victoria-metrics-operator
+    app.kubernetes.io/version: 1.1.3
+  name: ping-exporter
+  namespace: monitoring-system

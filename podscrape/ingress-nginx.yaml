@@ -1,0 +1,49 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMPodScrape
+metadata:
+  name: ingress-nginx-controller
+  labels:
+    app.kubernetes.io/component: exporter
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: victoria-metrics-operator
+    app.kubernetes.io/version: 1.2.0
+  namespace: monitoring-system
+spec:
+  jobLabel: app.kubernetes.io/name
+  namespaceSelector:
+    matchNames:
+    - ingress-nginx
+  podMetricsEndpoints:
+  - interval: 30s
+    metricRelabelConfigs:
+    - action: drop
+      regex: nginx_ingress_controller_response_(size_bucket)
+      sourceLabels:
+      - __name__
+    - action: drop
+      regex: nginx_ingress_controller_request_(size_bucket)
+      sourceLabels:
+      - __name__
+    - action: drop
+      regex: nginx_ingress_controller_bytes_(sent_bucket)
+      sourceLabels:
+      - __name__
+    - action: drop
+      separator: _
+      regex: .+_bucket_(0.005|0.01|0.025|0.05|0.1|0.25|0.5|2.5)
+      sourceLabels:
+      - __name__
+      - le
+    port: prometheus
+    relabelConfigs:
+    - action: replace
+      sourceLabels: 
+      - __meta_kubernetes_pod_node_name
+      targetLabel: node
+    - action: labeldrop
+      regex: (namespace|service)
+    scheme: http
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/name: ingress-nginx

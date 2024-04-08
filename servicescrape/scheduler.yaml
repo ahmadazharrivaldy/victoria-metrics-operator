@@ -1,0 +1,60 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: exporter
+    app.kubernetes.io/name: kube-scheduler
+    app.kubernetes.io/part-of: victoria-metrics-operator
+    app.kubernetes.io/version: 1.28.2
+  name: kube-scheduler-metrics
+  namespace: kube-system
+spec:
+  clusterIP: None
+  ports:
+    - name: https-metrics
+      port: 10259
+      protocol: TCP
+      targetPort: 10259
+  selector:
+    component: kube-scheduler
+    tier: control-plane
+  type: ClusterIP
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  labels:
+    app.kubernetes.io/component: exporter
+    app.kubernetes.io/name: kube-scheduler
+    app.kubernetes.io/part-of: victoria-metrics-operator
+    app.kubernetes.io/version: 1.28.2
+  name: kube-scheduler
+  namespace: monitoring-system
+spec:
+  endpoints:
+    - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      interval: 30s
+      port: https-metrics
+      metricRelabelConfigs:
+        - action: drop
+          regex: rest_client_(request_duration_seconds_bucket|request_latency_seconds_bucket)
+          sourceLabels:
+            - __name__
+      relabelConfigs:
+        - action: replace
+          sourceLabels:
+            - __meta_kubernetes_pod_node_name
+          targetLabel: node
+      scheme: https
+      tlsConfig:
+        insecureSkipVerify: true
+  jobLabel: app.kubernetes.io/name
+  namespaceSelector:
+    matchNames:
+      - kube-system
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: exporter
+      app.kubernetes.io/name: kube-scheduler
+      app.kubernetes.io/part-of: victoria-metrics-operator

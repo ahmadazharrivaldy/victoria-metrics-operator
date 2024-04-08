@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/name: vmagent-node-access
+    app.kubernetes.io/part-of: victoria-metrics-operator
+  name: vmagent-node-access
+  namespace: monitoring-system
+spec:
+  ports:
+  - name: http
+    nodePort: 30429
+    port: 8429
+    targetPort: 8429
+  selector:
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/name: vmagent
+    app.kubernetes.io/part-of: victoria-metrics-operator
+  type: NodePort
